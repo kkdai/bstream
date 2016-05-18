@@ -89,4 +89,9 @@ func TestWriteBits(t *testing.T) {
 	if err != nil || ret != 2650 {
 		t.Error("ReadBits error")
 	}
+
+	ret, err = b.ReadBits(4)
+	if err != nil || ret != 5 {
+		t.Error("ReadBits second error")
+	}
 }

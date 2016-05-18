@@ -146,36 +146,23 @@ func (b *BStream) ReadBits(count int) (uint64, error) {
 
 	var retValue uint64
 
-	//empty return io.EOF
-	if len(b.stream) == 0 {
-		return 0, io.EOF
-	}
-
-	if b.remainCount == 0 {
-		b.stream = b.stream[1:]
-
-		if len(b.stream) == 0 {
-			return 0, io.EOF
-		}
-
-		b.remainCount = 8
-	}
-
 	//handle byte reading
 	for count >= 8 {
 		retValue <<= 8
-		byt, _ := b.readByte()
+		byt, err := b.readByte()
+		if err != nil {
+			return 0, err
+		}
 		retValue |= uint64(byt)
 		count = count - 8
 	}
 
-	if count == 0 {
-		return retValue, nil
-	}
-
 	for count > 0 {
 		retValue <<= 1
-		bi, _ := b.readBit()
+		bi, err := b.readBit()
+		if err != nil {
+			return 0, err
+		}
 		if bi {
 			retValue |= 1
 		}
