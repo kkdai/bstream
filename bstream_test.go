@@ -32,13 +32,17 @@ func TestWriteByte(t *testing.T) {
 	if b.stream[1] != 160 {
 		t.Error("second byte error")
 	}
+
+	b.writeByte(0x00)
+	if b.stream[2] != 0 {
+		t.Error("third byte error")
+	}
 }
 
 func TestWriteCombo(t *testing.T) {
 	b := NewBStreamWriter(5)
 	b.writeBit(one)
 	b.writeByte(0xaa)
-	log.Println(b.stream[0], b.stream[1])
 
 	c := NewBStreamWriter(5)
 	c.WriteBits(0xaa, 8)
@@ -46,6 +50,17 @@ func TestWriteCombo(t *testing.T) {
 		t.Error("write bits wrong.")
 	}
 
+	c.WriteBits(0x0a0a, 8)
+	log.Println(c.stream[1])
+	if c.stream[1] != 0x0a {
+		t.Error("write bit error when too few")
+	}
+
+	c.WriteBits(0x0a0a, 16)
+	log.Println(c.stream[3])
+	if c.stream[3] != 0x0 {
+		t.Error("write bit error when too much")
+	}
 }
 
 func TestReadBit(t *testing.T) {
@@ -93,5 +108,29 @@ func TestWriteBits(t *testing.T) {
 	ret, err = b.ReadBits(4)
 	if err != nil || ret != 5 {
 		t.Error("ReadBits second error")
+	}
+}
+
+func BenchmarkWriteBits(b *testing.B) {
+	bb := NewBStreamWriter(255)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		bb.WriteBits(uint64(i), 8)
+	}
+}
+
+func BenchmarkReadBits(b *testing.B) {
+	bb := NewBStreamWriter(255)
+
+	for i := 0; i < b.N; i++ {
+		bb.WriteBits(uint64(i), 8)
+	}
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		bb.ReadBits(2)
 	}
 }
