@@ -14,6 +14,18 @@ Usage
 ---------------
 
 ```go
+	//New a bit stream writer with default 5 byte
+	b := NewBStreamWriter(5)
+	
+	//Write 0xa0a0 into bstream
+	b.WriteBits(0xa0a0, 16)
+	
+	//Read 4 bit out
+	result, err := b.ReadBits(4)
+	if err != nil {
+		log.Printf("result:%x", result)
+		//result:a
+	}
 ```
 
 

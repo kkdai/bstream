@@ -1,9 +1,6 @@
 package bstream
 
-import (
-	"log"
-	"testing"
-)
+import "testing"
 
 func TestWriteBit(t *testing.T) {
 	b := NewBStreamWriter(5)
@@ -51,14 +48,12 @@ func TestWriteCombo(t *testing.T) {
 	}
 
 	c.WriteBits(0x0a0a, 8)
-	log.Println(c.stream[1])
 	if c.stream[1] != 0x0a {
 		t.Error("write bit error when too few")
 	}
 
 	c.WriteBits(0x0a0a, 16)
-	log.Println(c.stream[3])
-	if c.stream[3] != 0x0 {
+	if c.stream[4] != 0x0 {
 		t.Error("write bit error when too much")
 	}
 }
