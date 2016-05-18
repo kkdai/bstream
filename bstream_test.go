@@ -42,5 +42,51 @@ func TestWriteCombo(t *testing.T) {
 
 	c := NewBStreamWriter(5)
 	c.WriteBits(0xaa, 8)
+	if c.stream[0] != 170 {
+		t.Error("write bits wrong.")
+	}
 
+}
+
+func TestReadBit(t *testing.T) {
+	b := NewBStreamWriter(5)
+	b.WriteBits(0xa0, 8)
+
+	bit, err := b.readBit()
+
+	if err != nil || bit == zero {
+		t.Error("Read first bit error")
+	}
+
+	bit, err = b.readBit()
+
+	if err != nil || bit == one {
+		t.Error("Read second bit error")
+	}
+}
+
+func TestReadByte(t *testing.T) {
+	b := NewBStreamWriter(5)
+	b.WriteBits(0xa5a5, 16)
+
+	bit, err := b.readBit()
+
+	if err != nil || bit == zero {
+		t.Error("Read first bit error")
+	}
+
+	byt, err := b.readByte()
+	if byt != 75 {
+		t.Error("Read byte error")
+	}
+}
+
+func TestWriteBits(t *testing.T) {
+	b := NewBStreamWriter(24)
+	b.WriteBits(0xa5a5, 16)
+
+	ret, err := b.ReadBits(12)
+	if err != nil || ret != 2650 {
+		t.Error("ReadBits error")
+	}
 }

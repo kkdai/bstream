@@ -1,5 +1,7 @@
 package bstream
 
+import "io"
+
 type bit bool
 
 const (
@@ -7,6 +9,7 @@ const (
 	one  bit = true
 )
 
+//BStream :
 type BStream struct {
 	stream      []byte
 	remainCount uint8
@@ -18,8 +21,8 @@ func NewBStreamReader(data []byte) *BStream {
 }
 
 //NewBStreamWriter :
-func NewBStreamWriter(length uint8) *BStream {
-	return &BStream{stream: make([]byte, 0, length), remainCount: 0}
+func NewBStreamWriter(nByte uint8) *BStream {
+	return &BStream{stream: make([]byte, 0, nByte), remainCount: 0}
 }
 
 //WriteBit :
@@ -70,6 +73,115 @@ func (b *BStream) WriteBits(data uint64, count int) {
 		b.writeBit(bi == 1)
 
 		data <<= 1
-		count -= 1
+		count--
 	}
+}
+
+func (b *BStream) readBit() (bit, error) {
+	//empty return io.EOF
+	if len(b.stream) == 0 {
+		return zero, io.EOF
+	}
+
+	//if first byte already empty, move to next byte to retrieval
+	if b.remainCount == 0 {
+		b.stream = b.stream[1:]
+
+		if len(b.stream) == 0 {
+			return zero, io.EOF
+		}
+
+		b.remainCount = 8
+	}
+
+	// handle bit retrieval
+	retBit := b.stream[0] & 0x80
+	b.stream[0] <<= 1
+	b.remainCount--
+
+	return retBit != 0, nil
+}
+
+func (b *BStream) readByte() (byte, error) {
+	//empty return io.EOF
+	if len(b.stream) == 0 {
+		return 0, io.EOF
+	}
+
+	//if first byte already empty, move to next byte to retrieval
+	if b.remainCount == 0 {
+		b.stream = b.stream[1:]
+
+		if len(b.stream) == 0 {
+			return 0, io.EOF
+		}
+
+		b.remainCount = 8
+	}
+
+	//just remain 8 bit, just return this byte directly
+	if b.remainCount == 8 {
+		byt := b.stream[0]
+		b.stream = b.stream[1:]
+		return byt, nil
+	}
+
+	//handle byte retrieval
+	retByte := b.stream[0]
+	b.stream = b.stream[1:]
+
+	//check if we could finish retrieval on next byte
+	if len(b.stream) == 0 {
+		return 0, io.EOF
+	}
+
+	//handle remain bit on next stream
+	retByte |= b.stream[0] >> b.remainCount
+	b.stream[0] <<= (8 - b.remainCount)
+	return retByte, nil
+}
+
+//ReadBits :
+func (b *BStream) ReadBits(count int) (uint64, error) {
+
+	var retValue uint64
+
+	//empty return io.EOF
+	if len(b.stream) == 0 {
+		return 0, io.EOF
+	}
+
+	if b.remainCount == 0 {
+		b.stream = b.stream[1:]
+
+		if len(b.stream) == 0 {
+			return 0, io.EOF
+		}
+
+		b.remainCount = 8
+	}
+
+	//handle byte reading
+	for count >= 8 {
+		retValue <<= 8
+		byt, _ := b.readByte()
+		retValue |= uint64(byt)
+		count = count - 8
+	}
+
+	if count == 0 {
+		return retValue, nil
+	}
+
+	for count > 0 {
+		retValue <<= 1
+		bi, _ := b.readBit()
+		if bi {
+			retValue |= 1
+		}
+
+		count--
+	}
+
+	return retValue, nil
 }
