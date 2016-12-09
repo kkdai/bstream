@@ -4,16 +4,16 @@ import "testing"
 
 func TestWriteBit(t *testing.T) {
 	b := NewBStreamWriter(5)
-	b.writeBit(one)
+	b.WriteBit(one)
 	if b.stream[0] != 128 {
 		t.Error("first bit error")
 	}
-	b.writeBit(one)
+	b.WriteBit(one)
 	if b.stream[0] != 192 {
 		t.Error("second bit error")
 	}
 
-	b.writeBit(one)
+	b.WriteBit(one)
 	if b.stream[0] != 224 {
 		t.Error("third bit error")
 	}
@@ -21,16 +21,16 @@ func TestWriteBit(t *testing.T) {
 
 func TestWriteByte(t *testing.T) {
 	b := NewBStreamWriter(5)
-	b.writeByte(0xff)
+	b.WriteByte(0xff)
 	if b.stream[0] != 255 {
 		t.Error("first byte error")
 	}
-	b.writeByte(0xa0)
+	b.WriteByte(0xa0)
 	if b.stream[1] != 160 {
 		t.Error("second byte error")
 	}
 
-	b.writeByte(0x00)
+	b.WriteByte(0x00)
 	if b.stream[2] != 0 {
 		t.Error("third byte error")
 	}
@@ -38,8 +38,8 @@ func TestWriteByte(t *testing.T) {
 
 func TestWriteCombo(t *testing.T) {
 	b := NewBStreamWriter(5)
-	b.writeBit(one)
-	b.writeByte(0xaa)
+	b.WriteBit(one)
+	b.WriteByte(0xaa)
 
 	c := NewBStreamWriter(5)
 	c.WriteBits(0xaa, 8)
@@ -62,13 +62,13 @@ func TestReadBit(t *testing.T) {
 	b := NewBStreamWriter(5)
 	b.WriteBits(0xa0, 8)
 
-	bit, err := b.readBit()
+	bit, err := b.ReadBit()
 
 	if err != nil || bit == zero {
 		t.Error("Read first bit error")
 	}
 
-	bit, err = b.readBit()
+	bit, err = b.ReadBit()
 
 	if err != nil || bit == one {
 		t.Error("Read second bit error")
@@ -79,13 +79,13 @@ func TestReadByte(t *testing.T) {
 	b := NewBStreamWriter(5)
 	b.WriteBits(0xa5a5, 16)
 
-	bit, err := b.readBit()
+	bit, err := b.ReadBit()
 
 	if err != nil || bit == zero {
 		t.Error("Read first bit error")
 	}
 
-	byt, err := b.readByte()
+	byt, err := b.ReadByte()
 	if byt != 75 {
 		t.Error("Read byte error")
 	}
