@@ -39,8 +39,8 @@ func (b *BStream) WriteBit(input bit) {
 	b.remainCount--
 }
 
-//WriteByte :
-func (b *BStream) WriteByte(data byte) {
+//WriteOneByte :
+func (b *BStream) WriteOneByte(data byte) {
 	if b.remainCount == 0 {
 		b.stream = append(b.stream, 0)
 		b.remainCount = 8
@@ -61,7 +61,7 @@ func (b *BStream) WriteBits(data uint64, count int) {
 	//handle write byte if count over 8
 	for count >= 8 {
 		byt := byte(data >> (64 - 8))
-		b.WriteByte(byt)
+		b.WriteOneByte(byt)
 
 		data <<= 8
 		count -= 8
