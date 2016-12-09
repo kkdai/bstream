@@ -172,3 +172,9 @@ func (b *BStream) ReadBits(count int) (uint64, error) {
 
 	return retValue, nil
 }
+
+// Bytes returns the bytes in the stream - taken from
+// https://github.com/dgryski/go-tsz/bstream.go
+func (b *BStream) Bytes() []byte {
+	return b.stream
+}
