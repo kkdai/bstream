@@ -26,7 +26,7 @@ func NewBStreamWriter(nByte uint8) *BStream {
 }
 
 //WriteBit :
-func (b *BStream) writeBit(input bit) {
+func (b *BStream) WriteBit(input bit) {
 	if b.remainCount == 0 {
 		b.stream = append(b.stream, 0)
 		b.remainCount = 8
@@ -39,8 +39,8 @@ func (b *BStream) writeBit(input bit) {
 	b.remainCount--
 }
 
-//WriteByte :
-func (b *BStream) writeByte(data byte) {
+//WriteOneByte :
+func (b *BStream) WriteOneByte(data byte) {
 	if b.remainCount == 0 {
 		b.stream = append(b.stream, 0)
 		b.remainCount = 8
@@ -61,7 +61,7 @@ func (b *BStream) WriteBits(data uint64, count int) {
 	//handle write byte if count over 8
 	for count >= 8 {
 		byt := byte(data >> (64 - 8))
-		b.writeByte(byt)
+		b.WriteOneByte(byt)
 
 		data <<= 8
 		count -= 8
@@ -70,14 +70,14 @@ func (b *BStream) WriteBits(data uint64, count int) {
 	//handle write bit
 	for count > 0 {
 		bi := data >> (64 - 1)
-		b.writeBit(bi == 1)
+		b.WriteBit(bi == 1)
 
 		data <<= 1
 		count--
 	}
 }
 
-func (b *BStream) readBit() (bit, error) {
+func (b *BStream) ReadBit() (bit, error) {
 	//empty return io.EOF
 	if len(b.stream) == 0 {
 		return zero, io.EOF
@@ -102,7 +102,7 @@ func (b *BStream) readBit() (bit, error) {
 	return retBit != 0, nil
 }
 
-func (b *BStream) readByte() (byte, error) {
+func (b *BStream) ReadByte() (byte, error) {
 	//empty return io.EOF
 	if len(b.stream) == 0 {
 		return 0, io.EOF
@@ -149,7 +149,7 @@ func (b *BStream) ReadBits(count int) (uint64, error) {
 	//handle byte reading
 	for count >= 8 {
 		retValue <<= 8
-		byt, err := b.readByte()
+		byt, err := b.ReadByte()
 		if err != nil {
 			return 0, err
 		}
@@ -159,7 +159,7 @@ func (b *BStream) ReadBits(count int) (uint64, error) {
 
 	for count > 0 {
 		retValue <<= 1
-		bi, err := b.readBit()
+		bi, err := b.ReadBit()
 		if err != nil {
 			return 0, err
 		}
@@ -171,4 +171,10 @@ func (b *BStream) ReadBits(count int) (uint64, error) {
 	}
 
 	return retValue, nil
+}
+
+// Bytes returns the bytes in the stream - taken from
+// https://github.com/dgryski/go-tsz/bstream.go
+func (b *BStream) Bytes() []byte {
+	return b.stream
 }
